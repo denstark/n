@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'inifile'
+
+
+conf = IniFile.load('nconf.ini')
+
+notes_dir = conf['n']['notes_dir']
+
