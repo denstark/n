@@ -1,9 +1,28 @@
 #!/usr/bin/env ruby
 
 require 'inifile'
-
+require 'optparse'
 
 conf = IniFile.load('nconf.ini')
 
 notes_dir = conf['n']['notes_dir']
 
+
+options = {}
+optparse = OptionParser.new do |opts|
+  opts.banner = "n [options] FILE"
+  options[:tags] = Array.new
+  opts.on('-t', '--tag tag1,tag2,tag3', Array, 'define tags for note') do |tags|
+    options[:tags] = tags
+  end
+
+
+  opts.on('-h', '--help', 'Show this help screen') do
+    puts opts
+  end
+end
+
+optparse.parse!
+
+puts "Tags: #{options[:tags]}"
+puts "ARGV: #{ARGV}"
