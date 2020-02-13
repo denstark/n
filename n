@@ -6,16 +6,33 @@ require 'optparse'
 conf = IniFile.load('nconf.ini')
 
 notes_dir = conf['n']['notes_dir']
-
+date_format = conf['n']['date_format']
+editor = conf['n']['editor']
+templates_dir = conf['n']['templates_dir']
+default_template =  conf['n']['default_template']
 
 options = {}
 optparse = OptionParser.new do |opts|
   opts.banner = "n [options] FILE"
   options[:tags] = Array.new
   opts.on('-t', '--tag tag1,tag2,tag3', Array, 'define tags for note') do |tags|
+    options[:has_tags?] = true
     options[:tags] = tags
   end
 
+  opts.on('-d', '--day', 'Append day to note name') do
+    options[:day] = true
+  end
+
+  opts.on('-s', '--search terms', 'Search notes text') do |terms|
+    options[:search] = true
+    options[:search_terms] = terms
+  end
+
+  opts.on('-l', '--template name', 'Apply a template by name from your templates directory') do |template|
+    options[:template] = true
+    options[:template_name] = template
+  end
 
   opts.on('-h', '--help', 'Show this help screen') do
     puts opts
@@ -24,5 +41,37 @@ end
 
 optparse.parse!
 
+todays_date = Time.now.strftime(date_format)
+
+if ARGV.empty?
+  editfile = todays_date
+else
+  editfile = ARGV[0]
+  if options[:day]
+    editfile = todays_date + '-' + editfile
+  end
+end
+
+
+editfile = notes_dir + editfile
+if !File.exists?(editfile)
+  # File doesn't exist, we're free to do whatever
+  
+  if options[:template]
+    system("cp -vn #{templates_dir}#{options[:template_name]} #{editfile}")
+  elsif !default_template.empty?
+    system("cp -vn #{templates_dir}#{default_template} #{editfile}")
+  end
+
+  if options[:has_tags?] and !options[:template]
+    tags_text = "\ntags: " + options[:tags].join(',')
+    File.open(editfile, mode='w') do |f|
+      f.puts tags_text
+    end
+  end
+end
+
+puts "editfile: #{editfile}"
 puts "Tags: #{options[:tags]}"
 puts "ARGV: #{ARGV}"
+exec("#{editor} #{editfile}")

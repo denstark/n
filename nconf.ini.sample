@@ -1,0 +1,8 @@
+[n]
+notes_dir = /home/user/notes
+; Ruby strftime date format used below.
+date_format = %Y%m%d
+editor = vim
+
+templates_dir = ~/.n/templates/
+; default_template = default
